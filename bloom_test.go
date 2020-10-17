@@ -59,6 +59,36 @@ func TestBloomPanic(t *testing.T) {
 	New(100, nil)
 }
 
+func TestBloomNotFound(t *testing.T) {
+	t.Parallel()
+
+	f1 := func(d interface{}) uint {
+		s := d.(string)
+
+		return uint(s[0])
+	}
+	f2 := func(d interface{}) uint {
+		s := d.(string)
+
+		return uint(s[1])
+	}
+	f3 := func(d interface{}) uint {
+		s := d.(string)
+
+		return uint(s[2])
+	}
+
+	bl := New(100, f1, f2, f3)
+
+	bl.Add("foo")
+	bl.Add("bar")
+	bl.Add("baz")
+
+	if bl.Contains("xyz") {
+		t.Errorf("this value is so different it can't exist given the hashes above")
+	}
+}
+
 func BenchmarkBloom(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, tc := range testcases {
