@@ -7,8 +7,8 @@ const bits = 64
 // distributed 'uint'.
 type Hash func(interface{}) uint
 
-// Bloom is the interface of allowable actions.
-type Bloom interface {
+// Filter is the Bloom Filter interface of allowable actions.
+type Filter interface {
 
 	// Contains returns true if it's probable that
 	// this value was added to the Bloom Filter.
@@ -18,19 +18,19 @@ type Bloom interface {
 	Add(interface{})
 }
 
-type bloom struct {
+type filter struct {
 	bits   []uint64
 	m      uint
 	hashes []Hash
 }
 
-func (b *bloom) Contains(d interface{}) bool {
-	for _, bh := range b.hashes {
+func (f *filter) Contains(d interface{}) bool {
+	for _, bh := range f.hashes {
 		realPos := bh(d)
 		index := realPos / bits
 		offset := realPos % bits
 
-		if res := b.bits[index] & (uint64(1) << offset); res == 0 {
+		if res := f.bits[index] & (uint64(1) << offset); res == 0 {
 			return false
 		}
 	}
@@ -38,26 +38,26 @@ func (b *bloom) Contains(d interface{}) bool {
 	return true
 }
 
-func (b *bloom) Add(d interface{}) {
-	for _, bh := range b.hashes {
+func (f *filter) Add(d interface{}) {
+	for _, bh := range f.hashes {
 		realPos := bh(d)
 		index := realPos / bits
 		offset := realPos % bits
 
-		b.bits[index] |= (uint64(1) << offset)
+		f.bits[index] |= (uint64(1) << offset)
 	}
 }
 
 // New returns a new Bloom Filter of size 'm' bits and with the
 // specified number of hash functions.
-func New(m uint, k ...Hash) Bloom {
+func New(m uint, k ...Hash) Filter {
 	for _, f := range k {
 		if f == nil {
 			panic("can't pass nil as a hash function")
 		}
 	}
 
-	return &bloom{
+	return &filter{
 		bits:   make([]uint64, (m/bits)+1),
 		m:      m,
 		hashes: k,
