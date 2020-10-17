@@ -31,23 +31,23 @@ var testcases = []struct {
 	},
 }
 
-func TestBloom(t *testing.T) {
+func TestBloomFilter(t *testing.T) {
 	t.Parallel()
 
 	for _, tc := range testcases {
-		bl := New(tc.m, tc.hashes...)
+		blf := New(tc.m, tc.hashes...)
 
 		for _, data := range tc.data {
-			bl.Add(data)
+			blf.Add(data)
 
-			if !bl.Contains(data) {
+			if !blf.Contains(data) {
 				t.Errorf("Newly added element is not found")
 			}
 		}
 	}
 }
 
-func TestBloomPanic(t *testing.T) {
+func TestBloomFilterPanic(t *testing.T) {
 	t.Parallel()
 
 	defer func() {
@@ -59,7 +59,7 @@ func TestBloomPanic(t *testing.T) {
 	New(100, nil)
 }
 
-func TestBloomNotFound(t *testing.T) {
+func TestBloomFilterNotFound(t *testing.T) {
 	t.Parallel()
 
 	f1 := func(d interface{}) uint {
@@ -78,13 +78,13 @@ func TestBloomNotFound(t *testing.T) {
 		return uint(s[2])
 	}
 
-	bl := New(100, f1, f2, f3)
+	blf := New(100, f1, f2, f3)
 
-	bl.Add("foo")
-	bl.Add("bar")
-	bl.Add("baz")
+	blf.Add("foo")
+	blf.Add("bar")
+	blf.Add("baz")
 
-	if bl.Contains("xyz") {
+	if blf.Contains("xyz") {
 		t.Errorf("this value is so different it can't exist given the hashes above")
 	}
 }
@@ -92,11 +92,11 @@ func TestBloomNotFound(t *testing.T) {
 func BenchmarkBloom(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, tc := range testcases {
-			bl := New(tc.m, tc.hashes...)
+			blf := New(tc.m, tc.hashes...)
 
 			for _, data := range tc.data {
-				bl.Add(data)
-				_ = bl.Contains
+				blf.Add(data)
+				_ = blf.Contains
 			}
 		}
 	}
